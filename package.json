@@ -1,16 +1,25 @@
 {
   "name": "pvzstatus",
   "version": "1.0.0",
-  "description": "",
+  "description": "Telegram бот-генератор событий для ПВЗ",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "telegram",
+    "bot",
+    "pvz",
+    "status"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^17.2.1",
     "node-telegram-bot-api": "^0.66.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
