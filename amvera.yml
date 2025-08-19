@@ -1,0 +1,12 @@
+meta:
+  environment: node
+  toolchain:
+    name: npm
+    version: 18
+
+build:
+  skip: 'yes'
+
+run:
+  scriptName: 'npm run start'
+  persistenceMount: /data
