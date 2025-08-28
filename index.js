@@ -2,6 +2,8 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
+const fetch = require('node-fetch');
+
 
 // Загрузка токена
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -97,6 +99,33 @@ function getTargetChatId() {
     return cfg.chatId;
 }
 
+async function getRandomWBProduct() {
+    try {
+        const url = "https://search.wb.ru/exactmatch/ru/common/v4/search?ab_testing=false&appType=1&curr=rub&dest=-1257786&page=1&query=товар&resultset=catalog&sort=popular&spp=0";
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.data || !data.data.products || data.data.products.length === 0) {
+            return null;
+        }
+
+        const products = data.data.products;
+        const product = products[Math.floor(Math.random() * products.length)];
+
+        const name = product.name;
+        const price = (product.salePriceU / 100).toFixed(2);
+        const id = product.id;
+        const pic = `https://images.wbstatic.net/c246x328/new/${Math.floor(id/10000)}0000/${id}-1.jpg`;
+        const link = `https://www.wildberries.ru/catalog/${id}/detail.aspx`;
+
+        return { name, price, pic, link };
+    } catch (err) {
+        console.error("Ошибка WB API:", err);
+        return null;
+    }
+}
+
+
 async function sendEventToTarget() {
     const chatId = getTargetChatId();
     if (!chatId) {
@@ -113,6 +142,18 @@ async function sendEventToTarget() {
 }
 
 // Команды
+
+bot.onText(/\/wb/, async (msg) => {
+    const chatId = msg.chat.id;
+    const product = await getRandomWBProduct();
+    if (!product) {
+        return bot.sendMessage(chatId, "Не удалось получить товар с Wildberries 😔");
+    }
+
+    const caption = `${product.name}\n💰 Цена: ${product.price}₽\n🔗 [Открыть на WB](${product.link})`;
+    bot.sendPhoto(chatId, product.pic, { caption, parse_mode: 'Markdown' });
+});
+
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     bot.sendMessage(chatId, 'Привет! Я бот-генератор событий для ПВЗ.\n\n/generate — сгенерировать событие\n/register — включить автопостинг\n/unregister — выключить автопостинг', {
